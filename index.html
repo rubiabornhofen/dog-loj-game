@@ -1,26 +1,387 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Dog Loj Game - Tips about lands of jail">
-    <title>Dog Loj Game</title>
+    <title>Land of Jail</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        theme: {
+                            dark: '#0f0f13',
+                            card: '#1e1e24',
+                            accent: '#f97316', // Orange-500
+                            accentHover: '#ea580c', // Orange-600
+                            text: '#e2e8f0',
+                            muted: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0f0f13; color: #e2e8f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e1e24; }
+        ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ea580c; }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Dog Loj Game</h1>
-        <p>Tips about lands of jail</p>
-    </header>
-    
-    <main>
-        <section>
-            <h2>Bem-vindo!</h2>
-            <p>Bem-vindo ao Dog Loj Game</p>
-        </section>
-    </main>
-    
-    <footer>
-        <p>&copy; 2026 Dog Loj Game</p>
-    </footer>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- DATA CONSTANTS ---
+
+        const HERO_TYPES = {
+            SHIELD: ['Phoenix', 'Gerd', 'Tyrann', 'Tyronn', 'Vesaryon', 'Caesar', 'Harton', 'Durga', 'Sumo Tyrant', 'Xuanming', 'Zoltan'],
+            BOMBER: ['Lunarl', 'Lunart', 'Tormund', 'Vivian', 'Alph', 'Gimes', 'Ekko', 'Samir', 'Pasino', 'Flameborn', 'Flamebome', 'Lanchester', 'Whisper', 'Ryuichi', 'Koschevoi', 'Kaschevol']
+        };
+
+        const getTroopType = (name) => {
+            const cleanName = name.trim();
+            if (HERO_TYPES.SHIELD.some(h => cleanName.includes(h))) return 'Shield';
+            if (HERO_TYPES.BOMBER.some(h => cleanName.includes(h))) return 'Bomber';
+            return 'Shooter';
+        };
+
+        // Data extracted
+        const HERO_DATA = [
+            // Support
+            { name: "Mia", rarity: "SSR", skills: [{ desc: "Stamina consumption for expeditions", min: "10%", max: "20%" }, { desc: "Stamina consumption for Rallies (Joint Pursuit)", min: "10% (1 squad)", max: "20% (2 squads)" }] },
+            { name: "Durga", rarity: "R", skills: [{ desc: "Cash Profit of Factory (Production Control)", min: "2%", max: "10%" }, { desc: "Gasoline Gathering (Mining Master)", min: "5%", max: "25%" }] },
+            { name: "Aiksen", rarity: "R", skills: [{ desc: "Cash Profit of Factory", min: "2%", max: "10%" }, { desc: "Food Gathering speed", min: "5%", max: "25%" }] },
+            { name: "Flora", rarity: "SSR", skills: [{ desc: "Expedition Speed during monster hunting", min: "20%", max: "100%" }, { desc: "Chance convert Severe to Minor Wounded", min: "2%", max: "10%" }] },
+            { name: "Harton", rarity: "R", skills: [{ desc: "Cash Profit of Factory", min: "2%", max: "10%" }, { desc: "Wood Gathering Speed", min: "5%", max: "25%" }] },
+            { name: "Pasino", rarity: "R", skills: [{ desc: "Cash Profit of Factory", min: "2%", max: "10%" }, { desc: "Steel Gathering Speed", min: "5%", max: "25%" }] },
+            
+            // War
+            { name: "Tormund", rarity: "SSR", skills: [{ desc: "All allied Troops DEF", min: "5%", max: "25%" }, { desc: "Chance of stun (Blazing Heat)", min: "4%", max: "20%" }, { desc: "All allied Troops HP", min: "5%", max: "25%" }] },
+            { name: "Gerd", rarity: "SSR", skills: [{ desc: "All allied Troop DEF", min: "5%", max: "25%" }, { desc: "Enemy Troop ATK (Riot Punishment)", min: "4%", max: "20%" }] },
+            { name: "Lunarl", rarity: "SSR", skills: [{ desc: "All allied Troop DMG dealt", min: "5%", max: "25%" }, { desc: "Troop lethality (Assassination)", min: "5%", max: "25%" }] },
+            { name: "Lofill", rarity: "SSR", skills: [{ desc: "All troops ATK", min: "5%", max: "25%" }, { desc: "50% Troop chance to DMG when attacking", min: "10%", max: "50%" }] },
+            { name: "Caesar", rarity: "SSR", skills: [{ desc: "Chance to revive soldiers lost", min: "4%", max: "20%" }, { desc: "Allied Troops DEF", min: "5%", max: "25%" }, { desc: "Troops HP (Crushing Blow)", min: "4%", max: "20%" }] },
+            { name: "Gimes", rarity: "SSR", skills: [{ desc: "All Troop HP", min: "5%", max: "25%" }, { desc: "Allied troops DMG taken", min: "4%", max: "20%" }] },
+            { name: "Phoenix", rarity: "SSR", skills: [{ desc: "Allied Troops DMG dealt", min: "5%", max: "25%" }, { desc: "Allied Troops HP", min: "5%", max: "25%" }, { desc: "Chance to stun enemy", min: "4%", max: "20%" }] },
+            { name: "Samir", rarity: "SSR", skills: [{ desc: "Troop ATK and Lethality", min: "3%/2%", max: "14%/12%" }, { desc: "Enemy HP (Blazing Gust)", min: "4%", max: "20%" }] },
+            { name: "Sumo Tyrant", rarity: "SSR", skills: [{ desc: "All Allied Troops DEF and HP", min: "3%/2%", max: "14%/12%" }, { desc: "Enemy Troop Lethality", min: "4%", max: "20%" }] },
+            { name: "Flameborn", rarity: "SSR", skills: [{ desc: "DMG when attacking Monsters", min: "6%", max: "30%" }, { desc: "Enemy Def (Tacit Strike)", min: "4%", max: "20%" }] },
+            { name: "Tyrann", rarity: "SSR", skills: [{ desc: "Enemy Troop DMG taken", min: "5%", max: "25%" }, { desc: "Allied troop lethality", min: "5%", max: "25%" }, { desc: "Chance to stun enemy", min: "4%", max: "20%" }] },
+            { name: "Lanchester", rarity: "SSR", skills: [{ desc: "If enemy stronger: HP, if not: lethality", min: "5%/6%", max: "25%/30%" }, { desc: "Chance to stun for 1 round", min: "4%", max: "20%" }, { desc: "Reduces enemy troops DMG", min: "4%", max: "20%" }] },
+            { name: "Alph", rarity: "SSR", skills: [{ desc: "Troops lethality", min: "4%", max: "20%" }, { desc: "If enemy stronger: DEF, if not: Enemy DEF", min: "6%/4%", max: "30%/20%" }] },
+            { name: "Mireya", rarity: "SSR", skills: [{ desc: "Enemy Troop ATK", min: "4%", max: "20%" }, { desc: "Allied Troop ATK", min: "5%", max: "25%" }, { desc: "Allied Troop DMG (Bonus if enemy stronger)", min: "4%/2%", max: "20%/10%" }] },
+            { name: "Veronica", rarity: "SSR", skills: [{ desc: "50% chance enemy DMG taken inc.", min: "10%", max: "50%" }, { desc: "Allied Troop Lethality", min: "5%", max: "25%" }, { desc: "Allied Troop DEF", min: "5%", max: "25%" }] },
+            { name: "Sawyer", rarity: "SSR", skills: [{ desc: "Enemy Troop HP (Rust Erosion)", min: "4%", max: "20%" }, { desc: "Allied Troop ATK", min: "5%", max: "25%" }, { desc: "Troop HP (If enemy force <70%: Enemy DEF reduced)", min: "5%/15%", max: "25%/5%" }] },
+            { name: "Whisper", rarity: "SSR", skills: [{ desc: "Enemy Troop DEF (Curse)", min: "4%", max: "20%" }, { desc: "Immune to DMG chance / DMG when attacking", min: "4%/10%", max: "20%/50%" }] },
+            { name: "Xuanming", rarity: "SSR", skills: [{ desc: "Allied Troop Lethality", min: "5%", max: "25%" }, { desc: "Allied Troops DEF", min: "5%", max: "25%" }, { desc: "DMG taken / Recover wounded if force <80%", min: "4%/2%", max: "20%/10%" }] },
+            { name: "Drake", rarity: "SSR", skills: [{ desc: "Shooters launch extra attack (Round multiple of 3)", min: "22%", max: "110%" }, { desc: "Reduce Enemy DMG Dealt", min: "10%", max: "50%" }, { desc: "Allied Troop ATK and Lethality", min: "3%/2%", max: "14%/12%" }] },
+            { name: "Koschevoi", rarity: "SSR", skills: [{ desc: "Precision Strike DMG", min: "5%", max: "25%" }, { desc: "Bombers Deal Extra Tactical DMG", min: "10%", max: "50%" }, { desc: "Bombers ATK and DEF", min: "8%", max: "3%" }] }, // Note: PDF said max 3% for DEF, likely OCR error, keeping as is or interpreted
+            { name: "Ryuichi", rarity: "SSR", skills: [{ desc: "Allied Troops Crit Chance", min: "5%", max: "25%" }, { desc: "Allied Troops Evade Chance", min: "4%", max: "20%" }, { desc: "Every 2 attacks, Bombers launch extra attack", min: "20%", max: "100%" }] },
+            { name: "Zoltan", rarity: "SSR", skills: [{ desc: "DMG taken (Round multiple of 4)", min: "10%", max: "80%" }, { desc: "Shieldbearer DMG / Retaliate after basic attack", min: "20%/6%", max: "100%/30%" }] },
+            { name: "Vivian", rarity: "SSR", skills: [{ desc: "Allied Troop ATK (Stunning Act)", min: "5%", max: "25%" }, { desc: "Building Upgrade Speed", min: "3%", max: "15%" }, { desc: "Reduce RSS needed for Buildings", min: "3%", max: "15%" }] },
+            { name: "Vesaryon", rarity: "SSR", skills: [{ desc: "Reduced enemy DMG", min: "4%", max: "20%" }, { desc: "Recruitment Point recovery speed", min: "3%", max: "15%" }] },
+            { name: "Ekko", rarity: "SSR", skills: [{ desc: "Allied Troop Lethality", min: "5%", max: "25%" }, { desc: "Gathering Speed of all RSS", min: "5%", max: "25%" }] },
+            { name: "Platos", rarity: "SSR", skills: [{ desc: "Allied Troops DMG Taken", min: "4%", max: "20%" }, { desc: "Medical Stations Healing speed", min: "10%", max: "50%" }] },
+            { name: "Inata", rarity: "SSR", skills: [{ desc: "Allied Troops HP (Emergency Construction)", min: "5%", max: "25%" }, { desc: "Research Speed", min: "3%", max: "15%" }, { desc: "Allied Troop ATK (Siege Tactics)", min: "5%", max: "25%" }] },
+            { name: "Devilian", rarity: "SSR", skills: [{ desc: "Allied Troop Lethality", min: "5%", max: "25%" }, { desc: "Soldier Training Speed", min: "6%", max: "30%" }, { desc: "Allied Troop DEF", min: "5%", max: "25%" }] },
+        ].map(hero => ({ ...hero, type: getTroopType(hero.name) }));
+
+        // Icons
+        const Icons = {
+            Menu: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>,
+            X: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+            Search: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
+            Shield: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>,
+            Target: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>,
+            Bomb: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><path d="M22 2l-1.5 1.5"></path><path d="M19 5l-1.5 1.5"></path></svg>,
+            Users: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>,
+            Calendar: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>,
+            Axe: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m14 12-8.5 8.5a2.12 2.12 0 1 1-3-3L11 9"></path><path d="M15 13 9 7l4-4 6 6h3a8 8 0 0 1-7 7z"></path></svg>
+        };
+
+        // --- COMPONENTS ---
+
+        const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
+            const menuItems = [
+                { id: 'heroes', label: 'Hero List', icon: Icons.Users },
+                { id: 'rally', label: 'Rally Tips', icon: Icons.Target },
+                { id: 'gorilla', label: 'Gorilla', icon: Icons.Axe },
+                { id: 'events', label: 'Events', icon: Icons.Calendar },
+            ];
+
+            return (
+                <>
+                    {/* Mobile Overlay */}
+                    {isOpen && (
+                        <div 
+                            className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+                            onClick={() => setIsOpen(false)}
+                        ></div>
+                    )}
+
+                    {/* Sidebar Container */}
+                    <div className={`fixed inset-y-0 left-0 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 ease-in-out z-30 w-64 bg-theme-card border-r border-gray-800 flex flex-col`}>
+                        <div className="p-6 border-b border-gray-800 flex justify-between items-center">
+                            <h1 className="text-2xl font-bold text-theme-accent tracking-tighter">LAND OF JAIL</h1>
+                            <button onClick={() => setIsOpen(false)} className="md:hidden text-gray-400">
+                                <Icons.X />
+                            </button>
+                        </div>
+
+                        <nav className="flex-1 p-4 space-y-2">
+                            {menuItems.map(item => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => { setActiveTab(item.id); setIsOpen(false); }}
+                                    className={`flex items-center w-full p-3 rounded-lg transition-all duration-200 ${
+                                        activeTab === item.id 
+                                        ? 'bg-theme-accent text-white shadow-lg shadow-orange-900/50' 
+                                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                    }`}
+                                >
+                                    <span className="mr-3"><item.icon /></span>
+                                    {item.label}
+                                </button>
+                            ))}
+                        </nav>
+
+                        <div className="p-4 border-t border-gray-800 text-center text-xs text-gray-500">
+                            <p>Data Version 1.0</p>
+                            <p className="mt-1">Attack Strategy: <span className="text-theme-accent font-bold">1 1 1</span></p>
+                        </div>
+                    </div>
+                </>
+            );
+        };
+
+        const HeroCard = ({ hero }) => {
+            const getIcon = () => {
+                switch(hero.type) {
+                    case 'Shield': return <Icons.Shield />;
+                    case 'Bomber': return <Icons.Bomb />;
+                    default: return <Icons.Target />;
+                }
+            };
+
+            const getTypeColor = () => {
+                switch(hero.type) {
+                    case 'Shield': return 'bg-blue-900 text-blue-200 border-blue-700';
+                    case 'Bomber': return 'bg-red-900 text-red-200 border-red-700';
+                    default: return 'bg-emerald-900 text-emerald-200 border-emerald-700';
+                }
+            };
+
+            return (
+                <div className="bg-theme-card rounded-xl p-5 border border-gray-800 hover:border-theme-accent transition-colors duration-300 shadow-lg">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 className="text-xl font-bold text-white">{hero.name}</h3>
+                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs mt-1 border ${getTypeColor()}`}>
+                                {getIcon()}
+                                {hero.type}
+                            </div>
+                        </div>
+                        <span className={`px-2 py-1 rounded text-xs font-bold ${hero.rarity === 'SSR' ? 'bg-yellow-600/20 text-yellow-500' : 'bg-gray-700 text-gray-300'}`}>
+                            {hero.rarity}
+                        </span>
+                    </div>
+
+                    <div className="space-y-3">
+                        {hero.skills.map((skill, idx) => (
+                            <div key={idx} className="bg-theme-dark rounded p-3 text-sm">
+                                <p className="text-gray-300 mb-1">{skill.desc}</p>
+                                <div className="flex justify-between text-xs font-mono">
+                                    <span className="text-gray-500">Min: <span className="text-theme-accent">{skill.min}</span></span>
+                                    <span className="text-gray-500">Max: <span className="text-theme-accent">{skill.max}</span></span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const HeroesPage = () => {
+            const [search, setSearch] = useState('');
+            const [filterType, setFilterType] = useState('All');
+
+            const filteredHeroes = useMemo(() => {
+                return HERO_DATA.filter(hero => {
+                    const matchesSearch = hero.name.toLowerCase().includes(search.toLowerCase()) || 
+                                          hero.skills.some(s => s.desc.toLowerCase().includes(search.toLowerCase()));
+                    const matchesType = filterType === 'All' || hero.type === filterType;
+                    return matchesSearch && matchesType;
+                });
+            }, [search, filterType]);
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-theme-card p-4 rounded-xl border border-gray-800">
+                        <div className="relative w-full md:w-96">
+                            <input 
+                                type="text" 
+                                placeholder="Search heroes or skills..." 
+                                className="w-full bg-theme-dark border border-gray-700 rounded-lg py-2.5 px-4 text-gray-200 focus:outline-none focus:border-theme-accent"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                            {['All', 'Shield', 'Bomber', 'Shooter'].map(type => (
+                                <button
+                                    key={type}
+                                    onClick={() => setFilterType(type)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                        filterType === type 
+                                        ? 'bg-theme-accent text-white' 
+                                        : 'bg-theme-dark text-gray-400 hover:text-white'
+                                    }`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredHeroes.map((hero, idx) => (
+                            <HeroCard key={idx} hero={hero} />
+                        ))}
+                    </div>
+                    
+                    {filteredHeroes.length === 0 && (
+                        <div className="text-center py-20 text-gray-500">
+                            <p className="text-xl">No heroes found matching your criteria.</p>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const InfoPage = ({ title, content, hasImageSlot = true }) => (
+            <div className="max-w-4xl mx-auto space-y-8">
+                <header className="border-b border-gray-800 pb-6">
+                    <h2 className="text-3xl font-bold text-white mb-2">{title}</h2>
+                    <p className="text-gray-400">Essential guide and information.</p>
+                </header>
+
+                {hasImageSlot && (
+                    <div className="aspect-video bg-theme-card border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:border-theme-accent hover:text-theme-accent transition-colors cursor-pointer group">
+                        <Icons.Target className="w-12 h-12 mb-2 opacity-50 group-hover:opacity-100" />
+                        <span>Image Slot: Upload or Link Image Here</span>
+                    </div>
+                )}
+
+                <div className="bg-theme-card p-8 rounded-xl border border-gray-800 prose prose-invert max-w-none">
+                    {content}
+                </div>
+            </div>
+        );
+
+        const GorillaContent = () => (
+            <div className="space-y-6">
+                <h3 className="text-xl font-bold text-theme-accent">Gorilla Analysis</h3>
+                                
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-gray-700">
+                                <th className="p-3 text-gray-400">Gorilla Name</th>
+                                <th className="p-3 text-gray-400">Troops proportion</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-800">
+                            <tr><td className="p-5">Space - Monday</td><td className="p-5">5/20/75</td></tr>
+                            <tr><td className="p-5">Wise - Tuesday</td><td className="p-5">0/20/80</td></tr>
+                            <tr><td className="p-5">Cyber - Wednesday</td><td className="p-5">0/20/80</td></tr>
+                            <tr><td className="p-5">Primal - Thursday</td><td className="p-5">0/0/0</td></tr>
+                            <tr><td className="p-5">Armed - Friday</td><td className="p-5">0/0/0</td></tr>
+                            <tr><td className="p-5">Treasure - Saturday</td><td className="p-5">0/0/0</td></tr>
+                            <tr><td className="p-5">Warlord - Sunday</td><td className="p-5">0/0/0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p className="text-sm text-gray-500 mt-4">*Data derived from tests and community.</p>
+            </div>
+        );
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('heroes');
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+            const renderContent = () => {
+                switch(activeTab) {
+                    case 'heroes': return <HeroesPage />;
+                    case 'rally': return <InfoPage 
+                        title="Rally Tips" 
+                        content={
+                            <div className="space-y-4">
+                                <h3 className="text-theme-accent font-bold">Strategy: 1 1 1</h3>
+                                <ul className="list-disc pl-5 space-y-2">
+                                    <li>Squad Leaders matter: The first hero sent by a filler provides active War Skills to the rally.</li>
+                                    <li>Avoid non-war heroes in combat: Heroes like Mia reduce stamina costs but provide zero benefits in Rallies due to a lack of War Skills. Keep them for development tasks only.</li>
+                                </ul>
+                            </div>
+                        } 
+                    />;
+                    case 'gorilla': return <InfoPage title="Gorilla Tips" content={<GorillaContent />} />;
+                    case 'events': return <InfoPage 
+                        title="Event Tips" 
+                    />;
+                    default: return <HeroesPage />;
+                }
+            };
+
+            return (
+                <div className="flex min-h-screen bg-theme-dark text-theme-text">
+                    <Sidebar 
+                        activeTab={activeTab} 
+                        setActiveTab={setActiveTab} 
+                        isOpen={isSidebarOpen}
+                        setIsOpen={setIsSidebarOpen}
+                    />
+
+                    <main className="flex-1 md:ml-64 transition-all duration-300">
+                        {/* Mobile Header */}
+                        <div className="md:hidden flex items-center justify-between p-4 bg-theme-card border-b border-gray-800 sticky top-0 z-10">
+                            <h1 className="font-bold text-theme-accent">LAND OF JAIL</h1>
+                            <button onClick={() => setIsSidebarOpen(true)} className="text-gray-200">
+                                <Icons.Menu />
+                            </button>
+                        </div>
+
+                        <div className="p-4 md:p-8 max-w-7xl mx-auto">
+                            {renderContent()}
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
