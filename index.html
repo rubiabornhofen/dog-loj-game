@@ -280,19 +280,34 @@
             );
         };
 
-        const InfoPage = ({ title, content, hasImageSlot = true }) => (
+        // Static Image Gallery (No uploads, no delete)
+        const ImageGallery = ({ images = [] }) => {
+            if (!images || images.length === 0) return null;
+
+            return (
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between px-1">
+                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Related Media</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {images.map((img, idx) => (
+                            <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-gray-700 bg-black">
+                                <img src={img} alt={`Media ${idx}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+        
+        const InfoPage = ({ title, content, images = [] }) => (
             <div className="max-w-4xl mx-auto space-y-8">
                 <header className="border-b border-gray-800 pb-6">
                     <h2 className="text-3xl font-bold text-white mb-2">{title}</h2>
                     <p className="text-gray-400">Essential guide and information.</p>
                 </header>
 
-                {hasImageSlot && (
-                    <div className="aspect-video bg-theme-card border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:border-theme-accent hover:text-theme-accent transition-colors cursor-pointer group">
-                        <Icons.Target className="w-12 h-12 mb-2 opacity-50 group-hover:opacity-100" />
-                        <span>Image Slot: Upload or Link Image Here</span>
-                    </div>
-                )}
+                <ImageGallery images={images} />
 
                 <div className="bg-theme-card p-8 rounded-xl border border-gray-800 prose prose-invert max-w-none">
                     {content}
@@ -316,7 +331,7 @@
                             <tr><td className="p-5">Space - Monday</td><td className="p-5">5/20/75</td></tr>
                             <tr><td className="p-5">Wise - Tuesday</td><td className="p-5">0/20/80</td></tr>
                             <tr><td className="p-5">Cyber - Wednesday</td><td className="p-5">0/20/80</td></tr>
-                            <tr><td className="p-5">Primal - Thursday</td><td className="p-5">0/0/0</td></tr>
+                            <tr><td className="p-5">Primal - Thursday</td><td className="p-5">0/10/90</td></tr>
                             <tr><td className="p-5">Armed - Friday</td><td className="p-5">0/0/0</td></tr>
                             <tr><td className="p-5">Treasure - Saturday</td><td className="p-5">0/0/0</td></tr>
                             <tr><td className="p-5">Warlord - Sunday</td><td className="p-5">0/0/0</td></tr>
@@ -345,10 +360,22 @@
                                 </ul>
                             </div>
                         } 
+                        images={[
+                            "https://placehold.co/800x400/1e1e24/f97316?text=Rally+Formation+Strategy+1-1-1"
+                        ]}
                     />;
-                    case 'gorilla': return <InfoPage title="Gorilla Tips" content={<GorillaContent />} />;
+                    case 'gorilla': return <InfoPage 
+                        title="Gorilla Tips" 
+                        content={<GorillaContent />} 
+                        images={[
+                            "https://placehold.co/800x400/1e1e24/f97316?text=Rally+Formation+Strategy+1-1-1"
+                        ]}
+                    />;
                     case 'events': return <InfoPage 
-                        title="Event Tips" 
+                        title="Event Tips"
+                        images={[
+                            "https://placehold.co/800x400/1e1e24/f97316?text=Rally+Formation+Strategy+1-1-1"
+                        ]}
                     />;
                     default: return <HeroesPage />;
                 }
