@@ -286,9 +286,6 @@
 
             return (
                 <div className="space-y-3">
-                    <div className="flex items-center justify-between px-1">
-                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Related Media</h3>
-                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {images.map((img, idx) => (
                             <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-gray-700 bg-black">
@@ -361,22 +358,29 @@
                             </div>
                         } 
                         images={[
-                            "https://github.com/rubiabornhofen/dog-loj-game/blob/main/img/rally-tips.png",
-                            "https://github.com/rubiabornhofen/dog-loj-game/blob/main/img/Rally_buffs.jpg",
-                            "https://github.com/rubiabornhofen/dog-loj-game/blob/main/img/rally-bonus.png"
+                            "img/rally-tips.png",
+                            "img/Rally_buffs.jpg",
+                            "img/rally-bonus.png",
+                            "img/war-hero.jpg",
+                            "img/support-hero.jpg"
                         ]}
                     />;
                     case 'gorilla': return <InfoPage 
                         title="Gorilla Tips" 
                         content={<GorillaContent />} 
                         images={[
-                            "https://placehold.co/800x400/1e1e24/f97316?text=Rally+Formation+Strategy+1-1-1"
+                            "img/gorilla-ratios.png",
+                            "img/gorila-army.png",
+                            "img/gorilla_troops_ratio.png"
                         ]}
                     />;
                     case 'events': return <InfoPage 
                         title="Event Tips"
                         images={[
-                            "https://placehold.co/800x400/1e1e24/f97316?text=Rally+Formation+Strategy+1-1-1"
+                            "img/svs-prep.png",
+                            "img/svs_prep_2.png",
+                            "img/svs_tips.png",
+                            "img/svs_after.png"
                         ]}
                     />;
                     default: return <HeroesPage />;
