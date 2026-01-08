@@ -280,20 +280,109 @@
             );
         };
 
-        // Static Image Gallery (No uploads, no delete)
         const ImageGallery = ({ images = [] }) => {
+            const [selectedImage, setSelectedImage] = useState(null);
+            const [zoom, setZoom] = useState(1);
+
             if (!images || images.length === 0) return null;
 
+            const openModal = (img) => {
+                setSelectedImage(img);
+                setZoom(1);
+            };
+
+            const closeModal = () => {
+                setSelectedImage(null);
+                setZoom(1);
+            };
+
+            const handleZoom = (delta) => {
+                setZoom(prev => {
+                    const newZoom = prev + delta;
+                    return Math.min(Math.max(0.5, newZoom), 5); // Increased max zoom to 5x
+                });
+            };
+
             return (
-                <div className="space-y-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {images.map((img, idx) => (
-                            <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-gray-700 bg-black">
-                                <img src={img} alt={`Media ${idx}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                            </div>
-                        ))}
+                <>
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between px-1">
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Related Media</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {images.map((img, idx) => (
+                                <div 
+                                    key={idx} 
+                                    onClick={() => openModal(img)}
+                                    className="relative aspect-video rounded-xl overflow-hidden border border-gray-700 bg-black cursor-pointer group"
+                                >
+                                    <img 
+                                        src={img} 
+                                        alt={`Media ${idx}`} 
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                        <span className="bg-black/50 text-white px-3 py-1 rounded-full text-xs backdrop-blur-sm border border-white/20">Click to Expand</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
+
+                    {/* Modal */}
+                    {selectedImage && (
+                        <div 
+                            className="fixed inset-0 z-50 flex overflow-auto bg-black/95 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+                            onClick={closeModal}
+                        >
+                            {/* Toolbar - Fixed position to stay visible during scroll */}
+                            <div className="fixed top-4 right-4 flex gap-2 z-[60]" onClick={e => e.stopPropagation()}>
+                                <button 
+                                    onClick={() => handleZoom(-0.25)}
+                                    className="p-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 hover:text-theme-accent transition-colors border border-gray-700 shadow-xl"
+                                    title="Zoom Out"
+                                >
+                                    <Icons.Minus />
+                                </button>
+                                <span className="flex items-center justify-center px-3 min-w-[3rem] bg-gray-800 text-xs font-mono rounded-full border border-gray-700 shadow-xl text-white">
+                                    {Math.round(zoom * 100)}%
+                                </span>
+                                <button 
+                                    onClick={() => handleZoom(0.25)}
+                                    className="p-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 hover:text-theme-accent transition-colors border border-gray-700 shadow-xl"
+                                    title="Zoom In"
+                                >
+                                    <Icons.Plus />
+                                </button>
+                                <div className="w-px h-8 bg-gray-700 mx-1"></div>
+                                <button 
+                                    onClick={closeModal}
+                                    className="p-2 rounded-full bg-red-900/50 text-red-200 hover:bg-red-900 transition-colors border border-red-900/50 shadow-xl"
+                                >
+                                    <Icons.X />
+                                </button>
+                            </div>
+
+                            {/* Image Container */}
+                            <div 
+                                className="m-auto relative flex items-center justify-center min-h-full min-w-full"
+                                onClick={e => e.stopPropagation()} 
+                            >
+                                <img 
+                                    src={selectedImage} 
+                                    alt="Enlarged view" 
+                                    className="shadow-2xl rounded-lg transition-all duration-200 ease-out object-contain"
+                                    style={{
+                                        height: zoom === 1 ? 'auto' : `${zoom * 85}vh`,
+                                        maxHeight: zoom === 1 ? '85vh' : 'none',
+                                        maxWidth: zoom === 1 ? '95vw' : 'none',
+                                        width: 'auto'
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </>
             );
         };
         
